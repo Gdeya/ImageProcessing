@@ -1,0 +1,6 @@
+set(OpenCV_DIR "D:/opencv/opencv/build")
+set(OpenCV_LIBS "D:/opencv/opencv/build/x64/vc15/bin")
+file(MAKE_DIRECTORY build.vs.2022)
+exec_program(cmake build.vs.2022 ARGS .. -G"Visual Studio 17 2022" -Ax64 -DOpenCV_DIR=${OpenCV_DIR} -DOpenCV_LIBS=${OpenCV_LIBS} -Dbuild_suffix=vs2022)
+exec_program(cmake build.vs.2022 ARGS --build . --config Debug)
+exec_program(cmake build.vs.2022 ARGS --build . --config Release)
