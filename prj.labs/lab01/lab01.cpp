@@ -13,7 +13,7 @@ int main() {
   }
   // Конвертим для pow
   cv::Mat I_1CONV;
-  I_1.convertTo(I_1CONV, CV_32FC1);
+  I_1.convertTo(I_1CONV, CV_32FC1, (1.0/255));
   // Создаем результат
   cv::Mat G_1;
   clock_t start = clock();
@@ -22,7 +22,7 @@ int main() {
   double seconds = (double)(end - start) / CLOCKS_PER_SEC;
   //
   cv::Mat G_2;
-  I_1.convertTo(G_2, CV_32FC1);
+  I_1.convertTo(G_2, CV_32FC1, 1.0/255);
   start = clock();
   for (auto i = 0; i < G_2.cols; i++) {
 	  for (auto j = 0; j < G_2.rows; j++) {
@@ -31,8 +31,10 @@ int main() {
   }
   end = clock();
   double seconds1 = (double)(end - start) / CLOCKS_PER_SEC;
-  cv::Mat G_3(180, 768, CV_32FC1);
-  cv::vconcat(I_1CONV, G_1, G_3);
+  cv::Mat G_3(180, 768, CV_8UC1);
+  G_1.convertTo(G_1, CV_8UC1, 255);
+  G_2.convertTo(G_2, CV_8UC1, 255);
+  cv::vconcat(I_1, G_1, G_3);;
   cv::vconcat(G_3, G_2, G_3);
   cv::imwrite("lab01_1.png", I_1);
   cv::imwrite("lab01_2.png", G_1);
