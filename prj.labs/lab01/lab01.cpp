@@ -36,10 +36,10 @@ int main() {
   G_2.convertTo(G_2, CV_8UC1, 255);
   cv::vconcat(I_1, G_1, G_3);;
   cv::vconcat(G_3, G_2, G_3);
-  cv::imwrite("lab01_1.png", I_1);
+  /*cv::imwrite("lab01_1.png", I_1);
   cv::imwrite("lab01_2.png", G_1);
-  cv::imwrite("lab01_3.png", G_2);
-  cv::imwrite("lab01_4.png", G_3);
+  cv::imwrite("lab01_3.png", G_2);*/
+  cv::imwrite("lab01.png", G_3);
   std::cout << "Time for pow :" << seconds << std::endl;
   std::cout << "Time for direct address :" << seconds1 << std::endl;
 }
