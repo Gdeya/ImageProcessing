@@ -78,7 +78,7 @@ int main() {
 
     cv::imwrite("cross_0256x0256_025.jpeg", img, p);
     cv::Mat hist;
-    cv::hconcat(createHist(img), createHist(imgjpeg), hist);
+    cv::vconcat(createHist(img), createHist(imgjpeg), hist);
     cv::imwrite("cross_0256x0256_png_channels.png", createMozaic(img));
     cv::imwrite("cross_0256x0256_jpg_channels.png", createMozaic(imgjpeg));
     cv::imwrite("cross_0256x0256_hists.png", hist);
