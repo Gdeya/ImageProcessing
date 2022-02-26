@@ -38,7 +38,7 @@ cv::Mat createHist(cv::Mat src) {
     calcHist(&bgr_planes[2], 1, 0, cv::Mat(), r_hist, 1, &histSize, histRange, uniform, accumulate);
     int hist_w = 512, hist_h = 400;
     int bin_w = cvRound((double)hist_w / histSize);
-    cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(0, 0, 0));
+    cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(255, 255, 255));
     normalize(b_hist, b_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
     normalize(g_hist, g_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
     normalize(r_hist, r_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
@@ -78,9 +78,14 @@ int main() {
 
     cv::imwrite("cross_0256x0256_025.jpeg", img, p);
     cv::Mat hist;
-    cv::vconcat(createHist(img), createHist(imgjpeg), hist);
+    cv::Mat line(3, 512, CV_8UC3, cv::Scalar(0, 0, 0));
+    cv::vconcat(line, createHist(img), hist);
+    cv::vconcat(hist, line, hist);
+    cv::vconcat(hist, createHist(imgjpeg), hist);
+    cv::vconcat(hist, line, hist);
     cv::imwrite("cross_0256x0256_png_channels.png", createMozaic(img));
     cv::imwrite("cross_0256x0256_jpg_channels.png", createMozaic(imgjpeg));
     cv::imwrite("cross_0256x0256_hists.png", hist);
+
     return 0;
 }
