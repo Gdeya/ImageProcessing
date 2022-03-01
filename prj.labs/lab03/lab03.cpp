@@ -1,8 +1,8 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-double brightnessTransform(int x) {
-    return x*3*log(x);
+double brightnessTransform(double x) {
+    return x*sin(x);
 }
 
 int main() {
@@ -17,10 +17,15 @@ int main() {
     cv::imwrite("lab03_rgb.png", img);
     cv::imwrite("lab03_gre.png", img_grey);
 
-    cv::Mat lookUpTable(1, 256, CV_8U);
-    uchar* p = lookUpTable.ptr();
-    for (int i = 0; i < 256; ++i)
-        p[i] = brightnessTransform(i);
+    /*cv::Mat lookUpTable(1, 256, CV_8U);
+    uchar* p = lookUpTable.ptr();*/
+    /*for (int i = 0; i < 256; ++i)
+        p[i] = brightnessTransform(i);*/
+    std::vector<int> lookUpTable(256);
+    for (int i = 0; i < 256; i += 1) {
+        lookUpTable.at(i) = (int)(brightnessTransform(i / 255.0) * 255);
+    }
+
 
     cv::Mat img_grey_tr;
     cv::LUT(img_grey, lookUpTable, img_grey_tr);
@@ -32,16 +37,13 @@ int main() {
 
     int func_hist_w = 512, func_hist_h = 512;
     cv::Mat func_hist(func_hist_w, func_hist_h, CV_8UC1, cv::Scalar(255, 255, 255));
-    for (int i = 0; i < 256; ++i) {
-        cv::line(
-            func_hist,
-            cv::Point((i - 1) * 2, func_hist_h - cvRound(p[i - 1]) * 2),
-            cv::Point((i) * 2, func_hist_h - cvRound(p[i]) * 2),
-            cv::Scalar(0, 0, 0),
-            1,
-            0
-        );
+    cv::line(func_hist, cv::Point(0, 0), cv::Point(0, 512), cv::Scalar(0, 0, 0), 2, 0);
+    cv::line(func_hist, cv::Point(0, 512), cv::Point(512, 512), cv::Scalar(0, 0, 0), 2, 0);
+    for (int x = 0; x < func_hist.cols; x += 1) {
+        int y = 511 - brightnessTransform(x / 511.0) * 511;
+        func_hist.at<uchar>(y, x) = 0;
     }
+
     cv::imwrite("lab03_viz_func.png", func_hist);
 
     return 0;
