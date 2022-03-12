@@ -23,8 +23,8 @@ cv::Mat quantize_frame(cv::Mat& frame) {
 
 cv::Mat morph(cv::Mat& frame) {
     cv::Mat Morph;
-    cv::morphologyEx(frame, Morph, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10)));
-    cv::morphologyEx(Morph, Morph, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10)));
+    cv::morphologyEx(frame, Morph, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)));
+    cv::morphologyEx(Morph, Morph, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)));
     /*cv::dilate(Morph, Morph, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(100, 100)));
     cv::erode(Morph, Morph, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(100, 100)));*/
     return Morph;
@@ -33,11 +33,12 @@ cv::Mat morph(cv::Mat& frame) {
 cv::Mat binarize_frame(cv::Mat& frame) {
 
     // watch https://docs.opencv.org/4.x/db/d8e/tutorial_threshold.html
-    int threshold_value = 170;  // below this value is black and above this value is white
+    int threshold_value = 170;  // below this value is black and above this value is white 
     int threshold_type = 0;     // binary type (divided into black & white)
     int max_binary_value = 255;
     cv::Mat binar;
     cv::threshold(quantize_frame(frame), binar, threshold_value, max_binary_value, threshold_type);
+    /*cv::adaptiveThreshold(quantize_frame(frame), binar, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 13, 0);*/
     /*cv::threshold(quantize_frame(frame), binar, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);*/
     return binar;
 }
@@ -77,15 +78,15 @@ int lab4(const std::string filename) {
     cv::Mat frame_quantized, frame_binar, frame_morph, finalimg;
     cv::Rect2i rect;
     for (int i = 0; i < 3; ++i) {
-        frame = frames.at((int)frames.size()*(i+2)/5.0);
+        frame = frames.at((int)frames.size()*(i+2)/5);
         frame_quantized = quantize_frame(frame);
         frame_binar = binarize_frame(frame);
         frame_morph = morph(frame_binar);
         rect = connected_components(frame_morph);
         cv::cvtColor(frame_morph, finalimg, cv::COLOR_RGB2BGR);
         cv::rectangle(finalimg, rect, cv::Scalar(0, 0, 255), 4);
-        cv::imwrite(filename + "frame.png", frame);
-        cv::imwrite(filename + "#" + std::to_string(i) + "finalimg.png", finalimg);
+        cv::hconcat(frame, finalimg, finalimg);
+        cv::imwrite(filename + "_" + std::to_string(i+2) + "_5.png", finalimg);
     }
     //cv::imwrite(filename + "quantized.png", frame_quantized);
     //cv::imwrite(filename + "binar.png", frame_binar);
@@ -93,9 +94,9 @@ int lab4(const std::string filename) {
 }
 
 int main() {
-    lab4("videotest");
-    lab4("videotest1");
-    lab4("videotest2");
-    lab4("videotest3");
-    lab4("videotest4");
+    lab4("lab4_1");
+    lab4("lab4_2");
+    lab4("lab4_3");
+    lab4("lab4_4");
+    lab4("lab4_5");
 }
