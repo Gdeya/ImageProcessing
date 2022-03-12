@@ -2,26 +2,26 @@
 #include <iostream>
 
 std::vector<cv::Mat> splitVideo(cv::VideoCapture& capture) {
-    cv::Mat frame;
     std::vector<cv::Mat> result;
     result.reserve(500);
-    for (;;) {
+    while (1) {
+        cv::Mat frame;
         capture >> frame;
-        if (frame.empty()) {
+        if (frame.empty())
             break;
-        }
         result.push_back(frame);
     }
+    capture.release();
     return result;
 }
 
-cv::Mat quantize_frame(cv::Mat frame) {
+cv::Mat quantize_frame(cv::Mat& frame) {
     cv::Mat quant;
     cv::cvtColor(frame, quant, cv::COLOR_BGRA2GRAY, 0);
     return quant;
 }
 
-cv::Mat morph(cv::Mat frame) {
+cv::Mat morph(cv::Mat& frame) {
     cv::Mat Morph;
     cv::morphologyEx(frame, Morph, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10)));
     cv::morphologyEx(Morph, Morph, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10)));
@@ -30,7 +30,7 @@ cv::Mat morph(cv::Mat frame) {
     return Morph;
 }
 
-cv::Mat binarize_frame(cv::Mat frame) {
+cv::Mat binarize_frame(cv::Mat& frame) {
 
     // watch https://docs.opencv.org/4.x/db/d8e/tutorial_threshold.html
     int threshold_value = 170;  // below this value is black and above this value is white
@@ -38,10 +38,11 @@ cv::Mat binarize_frame(cv::Mat frame) {
     int max_binary_value = 255;
     cv::Mat binar;
     cv::threshold(quantize_frame(frame), binar, threshold_value, max_binary_value, threshold_type);
+    /*cv::threshold(quantize_frame(frame), binar, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);*/
     return binar;
 }
 
-cv::Rect2i connected_components(const cv::Mat image) {
+cv::Rect2i connected_components(const cv::Mat& image) {
     cv::Mat labels, stats, centroids;
     cv::connectedComponentsWithStats(image, labels, stats, centroids);
 
@@ -64,32 +65,37 @@ cv::Rect2i connected_components(const cv::Mat image) {
     return rect;
 }
 
-int main() {
-	std::string path = cv::samples::findFile("videotest.mp4");
-	cv::VideoCapture video(path);
+int lab4(const std::string filename) {
+    std::string path = cv::samples::findFile(filename + ".mp4");
+    cv::VideoCapture video(path);
     if (!video.isOpened()) {
         std::cerr << "Failed to open the video device, video file or image sequence!\n";
         return 1;
     }
-	cv::Mat frame;
+    cv::Mat frame;
     auto frames = splitVideo(video);
-    frame = frames.at(45);
-	cv::imshow("img", frame);
-    auto frame_quantized = quantize_frame(frame);
-    auto frame_binar = binarize_frame(frame);
-    auto frame_morph = morph(frame_binar);
-    auto rect = connected_components(frame_morph);
-    cv::Mat finalimg;
-    
-    cv::cvtColor(frame_morph, finalimg, cv::COLOR_RGB2BGR);
+    cv::Mat frame_quantized, frame_binar, frame_morph, finalimg;
+    cv::Rect2i rect;
+    for (int i = 0; i < 3; ++i) {
+        frame = frames.at((int)frames.size()*(i+2)/5.0);
+        frame_quantized = quantize_frame(frame);
+        frame_binar = binarize_frame(frame);
+        frame_morph = morph(frame_binar);
+        rect = connected_components(frame_morph);
+        cv::cvtColor(frame_morph, finalimg, cv::COLOR_RGB2BGR);
+        cv::rectangle(finalimg, rect, cv::Scalar(0, 0, 255), 4);
+        cv::imwrite(filename + "frame.png", frame);
+        cv::imwrite(filename + "#" + std::to_string(i) + "finalimg.png", finalimg);
+    }
+    //cv::imwrite(filename + "quantized.png", frame_quantized);
+    //cv::imwrite(filename + "binar.png", frame_binar);
+    //cv::imwrite(filename + "morph.png", frame_morph);
+}
 
-
-    cv::rectangle(finalimg, rect, cv::Scalar(0, 0, 255), 4);
-
-    
-    cv::imshow("img1", frame_quantized);
-    cv::imshow("img2", frame_binar);
-    cv::imshow("img3", frame_morph);
-    cv::imshow("img4", finalimg);
-	cv::waitKey();
+int main() {
+    lab4("videotest");
+    lab4("videotest1");
+    lab4("videotest2");
+    lab4("videotest3");
+    lab4("videotest4");
 }
