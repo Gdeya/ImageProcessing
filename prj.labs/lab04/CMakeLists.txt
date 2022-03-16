@@ -1,5 +1,5 @@
 project(lab04)
-add_executable(lab04 lab04.cpp lab04.report.md.in.txt)
+add_executable(lab04 lab04.cpp lab04.report.md.in.txt json.hpp)
 target_link_libraries(lab04 ${OpenCV_LIBS})
 
 file(READ lab04.cpp cpp_source)
