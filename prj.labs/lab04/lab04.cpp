@@ -93,8 +93,8 @@ cv::Mat morph(cv::Mat& frame) {
     cv::Mat Morph;
     cv::morphologyEx(frame, Morph, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)));
     cv::morphologyEx(Morph, Morph, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)));
-    /*cv::dilate(Morph, Morph, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(100, 100)));
-    cv::erode(Morph, Morph, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(100, 100)));*/
+    cv::dilate(Morph, Morph, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(100, 100)));
+    cv::erode(Morph, Morph, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(100, 100)));
     return Morph;
 }
 
@@ -154,7 +154,12 @@ cv::Mat banknote_connected_component(const cv::Mat& image) {
     auto width = stats.at<int>(max_i, 2), height = stats.at<int>(max_i, 3);
 
     cv::Mat banknote(image.rows, image.cols, image.type(), cv::Scalar(0,0,0));
-    drawPolly(banknote, cv::Point(x, y + height), cv::Point(x, y), cv::Point(x + width, y), cv::Point(x + width, y + height));
+    /*drawPolly(banknote, cv::Point(x, y + height), cv::Point(x, y), cv::Point(x + width, y), cv::Point(x + width, y + height));*/
+    for (int i = x; i < x + width; ++i) {
+        for (int j = y; j < y + height; ++j) {
+            banknote.at<uchar>(j, i) = image.at<uchar>(j, i);
+        }
+    }
     return banknote;
 }
 
@@ -203,25 +208,17 @@ double compare_results(cv::Mat detected_result, cv::Mat correct_result) {
     return equal_white_pixels_count / total_white_pixels_count;
 }
 
-std::string drob(int i) {
-    int a = i % 3;
-    switch (a) {
-    case 0:
-        return std::to_string(2) + "_5.png";
-    case 1:
-        return std::to_string(3) + "_5.png";
-    case 2:
-        return std::to_string(4) + "_5.png";
-    }
-}
-
 void createMozaik(std::vector<cv::Mat> src, std::vector<cv::Mat> alg, std::vector<cv::Mat> est) {
-    for (int i = 0; i < 15; ++i) {
-        cv::cvtColor(alg[i], alg[i], cv::COLOR_RGB2BGR);
-        cv::cvtColor(est[i], est[i], cv::COLOR_RGB2BGR);
-        cv::hconcat(src[i], alg[i], src[i]);
-        cv::hconcat(src[i], est[i], src[i]);
-        cv::imwrite("lab4_"+std::to_string(1+i/3)+"_"+drob(i), src[i]);
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            cv::cvtColor(alg[i * 3 + j], alg[i * 3 + j], cv::COLOR_RGB2BGR);
+            cv::cvtColor(est[i * 3 + j], est[i * 3 + j], cv::COLOR_RGB2BGR);
+            cv::hconcat(src[i * 3 + j], alg[i * 3 + j], src[i * 3 + j]);
+            cv::hconcat(src[i * 3 + j], est[i * 3 + j], src[i * 3 + j]);
+        }
+        cv::vconcat(src[i * 3], src[i * 3 + 1], src[i * 3]);
+        cv::vconcat(src[i * 3], src[i * 3 + 2], src[i * 3]);
+        cv::imwrite("lab4_"+std::to_string(i + 1) + ".png", src[i * 3]);
     }
 }
 
